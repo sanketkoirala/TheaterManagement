@@ -1,6 +1,5 @@
-#Sanket Koirala 1002068130 Coding Assignment 7
 
-SRC1 = Code7_1002068130.c
+SRC1 = TheaterManagement.c
 SRC2 = MovieTheaterLib.c
 SRC3 = QueueLib.c
 SRC4 = BSTLib.c
