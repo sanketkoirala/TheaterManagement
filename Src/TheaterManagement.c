@@ -1,8 +1,11 @@
+
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
-int main(int argc, char *argv[])
-{
-    // initial commmit
-
-    return 0;
-}
+#include "MovieTheaterLib.h"
+#include "QueueLib.h"
+#include "BSTLib.h"
+#include "ListLib.h"
+#include "StackLib.h"
