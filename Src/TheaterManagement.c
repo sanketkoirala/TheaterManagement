@@ -161,3 +161,132 @@ int PrintMenu()
 
     return choice;
 }
+
+
+int main(int argc, char *argv[])
+{
+    int i, j, k;
+    FILE *queueFile = NULL;
+    FILE *zipFile = NULL;
+    char arg_value[20];
+    char queuefilename[20];
+    char zipfilename[20];
+    int ReceiptNumber = 0;
+    int choice = 0;
+    int SeatNumber;
+    char Row;
+    char Ticket[5];
+    int ArrayRow, ArrayCol;
+    int MapRow, MapCol;
+    char MovieTheaterMap[MAXROWS][MAXCOLS] = {};
+    LNODE *TicketLinkedListHead = NULL;
+    QNODE *QueueHead = NULL;
+    QNODE *QueueTail = NULL;
+    BNODE *BSTRoot = NULL;
+    BNODE *MyTheater = NULL;
+    SNODE *StackTop = NULL;
+    int NumberOfTickets = 0;
+
+    if (argc != 4)
+    {
+        printf("%s QUEUE=xxxxxx ZIPFILE=xxxxx RECEIPTNUMBER=xxxxx\n", argv[0]);
+        exit(0);
+    }
+
+    get_command_line_parameter(argv, "QUEUE=", queuefilename);
+    get_command_line_parameter(argv, "ZIPFILE=", zipfilename);
+    get_command_line_parameter(argv, "RECEIPTNUMBER=", arg_value);
+    ReceiptNumber = atoi(arg_value);
+
+    queueFile = fopen(queuefilename,"r+");
+    if (queueFile == NULL)
+    {
+        printf("File did not open");
+        exit(0);
+    }
+
+    zipFile = fopen(zipfilename,"r+");
+    if (zipFile == NULL)
+    {
+        printf("File did not open");
+        exit(0);
+    }
+
+    ReadFileIntoQueue(queueFile, &QueueHead, &QueueTail);
+    ReadFileIntoBST(zipFile, &BSTRoot);
+
+    while (QueueHead != NULL)
+    {
+        choice = PrintMenu();
+
+        switch (choice)
+        {
+            case 1 :
+                printf("\n\nHello %s\n", QueueHead->name);
+                MyTheater = PickAndDisplayTheater(BSTRoot, MovieTheaterMap, &MapRow, &MapCol);
+                if (MyTheater != NULL)
+                {
+                    printf("\n\nHow many movie tickets do you want to buy? ");
+                    scanf("%d", &NumberOfTickets);
+                    for (i = 0; i < NumberOfTickets; i++)
+                    {
+                        do
+                        {
+                            printf("\nPick a seat (Row Seat) ");
+                            scanf(" %c%d", &Row, &SeatNumber);
+                            Row = toupper(Row);
+                            ArrayRow = (int)Row - 65;
+                            ArrayCol = SeatNumber - 1;
+
+                            if ((ArrayRow < 0 || ArrayRow >= MapRow) ||
+                                (ArrayCol < 0 || ArrayCol >= MapCol))
+                            {
+                                printf("\nThat is not a valid seat.  Please choose again\n\n");
+                            }
+                        }
+                        while ((ArrayRow < 0 || ArrayRow >= MapRow) ||
+                               (ArrayCol < 0 || ArrayCol >= MapCol));
+
+                        if (MovieTheaterMap[ArrayRow][ArrayCol] == 'O')
+                        {
+                            MovieTheaterMap[ArrayRow][ArrayCol] = 'X';
+                            sprintf(Ticket, "%c%d", Row, SeatNumber);
+                            InsertNode(&TicketLinkedListHead, Ticket);
+                        }
+                        else
+                        {
+                            printf("\nSeat %c%d is not available.\n\n", Row, SeatNumber);
+                            i--;
+                        }
+                        PrintSeatMap(MovieTheaterMap, MapRow, MapCol);
+                    }
+
+                    WriteSeatMap(MyTheater, MovieTheaterMap, MapRow, MapCol);
+                    push(&StackTop, TicketLinkedListHead, ReceiptNumber, MyTheater->MovieTheaterName);
+                    TicketLinkedListHead = NULL;
+                    ReceiptNumber++;
+                    printf("\nThank you %s - enjoy your movie!\n", QueueHead->name);
+                    deQueue(&QueueHead);
+                }
+                break;
+            case 2 :
+                printf("\n\nCustomer Queue\n\n");
+                DisplayQueue(QueueHead);
+                printf("\n\n");
+                break;
+            case 3 :
+                PickAndDisplayTheater(BSTRoot, MovieTheaterMap, &MapRow, &MapCol);
+                break;
+            case 4 :
+                PrintReceipts(&StackTop);
+                break;
+            default :
+                printf("Bad menu choice");
+        }
+    }
+
+    printf("Good job - you sold tickets to all of the customers in line.\n");
+    PrintReceipts(&StackTop);
+
+    return 0;
+}
